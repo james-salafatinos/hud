@@ -1,0 +1,24 @@
+*{
+  margin: 0;
+  padding: 0;
+}
+body {
+  -webkit-app-region:drag;
+  background-color: transparent;
+  display: flex;
+  cursor: pointer;
+  justify-content: space-between;
+  color: rgb(0, 0, 0);
+  user-select:none
+}
+
+#close {
+  padding:5px;
+  font-size: .8em;
+  color: gray;
+  -webkit-app-region: no-drag;
+}
+
+#close:hover{
+  color:hotpink
+}
