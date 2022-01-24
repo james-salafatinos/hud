@@ -3,22 +3,34 @@
   padding: 0;
 }
 body {
-  -webkit-app-region:drag;
+  /* -webkit-app-region:drag; */
   background-color: transparent;
   display: flex;
   cursor: pointer;
   justify-content: space-between;
   color: rgb(0, 0, 0);
-  user-select:none
+  user-select:none;
+  overflow: hidden;
 }
 
 #close {
   padding:5px;
-  font-size: .8em;
-  color: gray;
-  -webkit-app-region: no-drag;
+  font-size: 2em;
+  color: black;
+  /* -webkit-app-region: no-drag; */
+}
+
+#start {
+  padding:5px;
+  font-size: 2em;
+  justify-content: space-between;
+  color: black;
+  /* -webkit-app-region: no-drag; */
 }
 
 #close:hover{
   color:hotpink
+}
+#start:hover{
+  color:rgb(123, 255, 105)
 }

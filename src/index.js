@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, ipcRenderer } = require('electron');
 const path = require('path');
 require('electron-reload')(__dirname)
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -8,24 +8,44 @@ if (require('electron-squirrel-startup')) {
 }
 
 const createWindow = () => {
+
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { width, height } = primaryDisplay.workAreaSize
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 200,
-    height: 100,
-    maxHeight: 100, minHeight: 100,
-    maxWidth: 200, minWidth: 200,
+    width: width,
+    height: height,
+    // width: 3500,
+    // height: 900,
     frame: false,
     autoHideMenuBar: true,
     webPreferences: {
-      preload: __dirname + "\\preload.js"
+      preload: __dirname + "\\api.js"
     },
     transparent: true,
-    alwaysOnTop: true
+    alwaysOnTop: true,
   });
 
   ipcMain.on('close-app', () => {
     app.quit()
   })
+
+  ipcMain.on('start', () => {
+    mainWindow.setIgnoreMouseEvents(true, {forward:true});
+
+  })
+  ipcMain.on('ignore', () => {
+    mainWindow.setIgnoreMouseEvents(false, { forward: true });
+  })
+  ipcMain.on('allow', () => {
+    mainWindow.setIgnoreMouseEvents(true, {forward:true});
+
+  })
+
+
+
+
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
