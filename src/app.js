@@ -9,32 +9,8 @@ import { PhysicsObject } from './modules/PhysicsObject.js'
 // RECORDER
 // */
 
+api.stream()
 
-async function selectSource() {
-    const constraints = {
-        audio: false,
-        video: {
-            cursor: 'motion'
-        }
-    }
-
-
-    // console.log(navigator.mediaDevices.getDisplayMedia())
-    navigator.mediaDevices.enumerateDevices().then((d)=>{
-        console.log(d)
-    })
-
-    api.getDevices()
-
-    const videoElement = document.querySelector('video');
-    const stream = await navigator.mediaDevices.getUserMedia(constraints)
-
-    videoElement.srcObject = stream;
-    videoElement.play();
-    // Preview the source in a video element
-
-}
-selectSource()
 // /*
 // RECORDER
 // */
