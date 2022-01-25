@@ -5,6 +5,40 @@ import Stats from './modules/stats.module.js';
 import { NoClipControls } from './modules/NoClipControls.js'
 import { PhysicsObject } from './modules/PhysicsObject.js'
 
+// /*
+// RECORDER
+// */
+
+
+async function selectSource() {
+    const constraints = {
+        audio: false,
+        video: {
+            cursor: 'motion'
+        }
+    }
+
+
+    // console.log(navigator.mediaDevices.getDisplayMedia())
+    navigator.mediaDevices.enumerateDevices().then((d)=>{
+        console.log(d)
+    })
+
+    api.getDevices()
+
+    const videoElement = document.querySelector('video');
+    const stream = await navigator.mediaDevices.getUserMedia(constraints)
+
+    videoElement.srcObject = stream;
+    videoElement.play();
+    // Preview the source in a video element
+
+}
+selectSource()
+// /*
+// RECORDER
+// */
+
 
 const CLOSE_BTN = document.getElementById('close')
 const START_BTN = document.getElementById('start')
@@ -100,7 +134,7 @@ function init() {
             transparent: false,
             depthTest: false,
             side: THREE.DoubleSide,
-            color: new THREE.Color(0xffeeff)
+            color: new THREE.Color(0x000e0)
         });
         let geo = new THREE.IcosahedronBufferGeometry(.2, 1)
         let mesh = new THREE.Mesh(geo, mat)
@@ -123,11 +157,12 @@ function init() {
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
         DEBUG.innerText = JSON.stringify(window.innerWidth)
-        mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1)/1100
-        mouseMesh.position.y = mouse.y * ((window.innerHeight) * 2 - 1)/1100
+        mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 1100
+        mouseMesh.position.y = mouse.y * ((window.innerHeight) * 2 - 1) / 1100
         //mouseMesh.position.copy(pos);
 
     });
+
 }
 
 

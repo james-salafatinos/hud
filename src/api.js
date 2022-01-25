@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron')
+const { contextBridge, ipcRenderer, desktopCapturer } = require('electron')
 
 
 contextBridge.exposeInMainWorld("api", {
@@ -11,7 +11,19 @@ contextBridge.exposeInMainWorld("api", {
     allow: () => {
         ipcRenderer.send('allow')
     },
-    start: () =>{
+    start: () => {
         ipcRenderer.send('start')
+    },
+    getDevices: () => {
+        // Get the available video sources
+
+        desktopCapturer.getSources({
+            types: ['window', 'screen']
+        }).then((d) => {
+            console.log(d)
+        })
+
     }
 })
+
+
