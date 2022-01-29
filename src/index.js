@@ -21,10 +21,10 @@ const createWindow = () => {
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    // width: width,
-    // height: height,
-    width: 3500,
-    height: 900,
+    width: width,
+    height: height,
+    // width: 3500,
+    // height: 900,
     frame: false,
     autoHideMenuBar: true,
     webPreferences: {
