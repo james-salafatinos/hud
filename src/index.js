@@ -1,12 +1,6 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 
-//Record
-
-// Global state
-let mediaRecorder; // MediaRecorder instance to capture footage
-const recordedChunks = [];
-
 require('electron-reload')(__dirname)
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -29,7 +23,6 @@ const createWindow = () => {
     autoHideMenuBar: true,
     webPreferences: {
       preload: __dirname + "\\api.js",
-      nodeIntegration: true
     },
     transparent: true,
     alwaysOnTop: true,
@@ -38,10 +31,8 @@ const createWindow = () => {
   ipcMain.on('close-app', () => {
     app.quit()
   })
-
   ipcMain.on('start', () => {
     mainWindow.setIgnoreMouseEvents(true, { forward: true });
-
   })
   ipcMain.on('ignore', () => {
     mainWindow.setIgnoreMouseEvents(false, { forward: true });
@@ -51,22 +42,11 @@ const createWindow = () => {
 
   })
 
-
-
- 
-  ipcMain.on('record', () => {
-    // Buttons
-    selectSource()
-  })
-
-
-
-
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   // // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished

@@ -6,14 +6,32 @@ import { NoClipControls } from './modules/NoClipControls.js'
 import { PhysicsObject } from './modules/PhysicsObject.js'
 
 // /*
-// RECORDER
+// VIDEO STREAM
 // */
 
+//This directly calls the API Stream from api.js
 api.stream()
 
 // /*
-// RECORDER
+// MACHINE LEARNING
 // */
+const createKNNClassifier = async () => {
+    console.log("Loading KNN Classifier");
+    return await knnClassifier.create();
+};
+const createMobileNetModel = async () => {
+    console.log("Loading Mobilenet Model");
+    return await mobilenet.load();
+};
+const createWebcamInput = async () => {
+    console.log("Loading Webcam Input");
+    const webcamElement = await document.getElementById("video");
+    return await tf.data.webcam(webcamElement);
+};
+
+const mobilenetModel = await createMobileNetModel();
+const knnClassifierModel = await createKNNClassifier();
+const webcamInput = await createWebcamInput();
 
 
 const CLOSE_BTN = document.getElementById('close')
@@ -22,11 +40,17 @@ const DEBUG = document.getElementById('debug')
 let mouseMesh;
 var mouse = new THREE.Vector2();
 
+// STart and close Button (Top Left)
 START_BTN.addEventListener('click', () => {
     api.start()
     START_BTN.style.color = '#7aff69'
 })
-
+START_BTN.addEventListener('mouseenter', () => {
+    api.ignore()
+})
+START_BTN.addEventListener('mouseleave', () => {
+    api.allow()
+})
 CLOSE_BTN.addEventListener('click', () => {
     api.close()
 })
@@ -57,19 +81,17 @@ function init() {
 
     const axesHelper = new THREE.AxesHelper(5);
     scene.add(axesHelper);
-    // const gridHelper = new THREE.GridHelper(5);
-    // scene.add(gridHelper);
+    const gridHelper = new THREE.GridHelper(6, 2);
+    scene.add(gridHelper);
 
 
-    // //Create three.js stats
-    // stats = new Stats();
-    // container.appendChild(stats.dom);
 
     //Renderer
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    let domCanvas = document.getElementById('canvas')
+    domCanvas.appendChild(renderer.domElement);
 
     // LIGHTS
     const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
@@ -79,7 +101,8 @@ function init() {
 
     //Camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-
+    camera.position.y = 5
+    camera.lookAt(0, 0, 0)
 
     //NO CLIP CONTROLS
     controls = new NoClipControls(window, camera, document);
@@ -87,11 +110,11 @@ function init() {
 
     let createCube = function (_x, _y, _z) {
         let mat = new THREE.MeshBasicMaterial({
-            wireframe: false,
+            wireframe: true,
             transparent: false,
             depthTest: false,
             side: THREE.DoubleSide,
-            color: new THREE.Color(0x000000)
+            color: new THREE.Color(0x00fe00)
         });
         let geo = new THREE.BoxGeometry(.5, .5, .5)
         let mesh = new THREE.Mesh(geo, mat)
@@ -101,8 +124,8 @@ function init() {
         return mesh
     }
 
-    // cube = createCube(0, 0, -10)
-    // scene.add(cube)
+    cube = createCube(0, 0, 1)
+    scene.add(cube)
 
     let createMouse = function (_x, _y, _z) {
         let mat = new THREE.MeshBasicMaterial({
@@ -120,21 +143,37 @@ function init() {
         return mesh
     }
 
-    mouseMesh = createMouse(0, 0, -3)
+    mouseMesh = createMouse(0, 0, 0)
     scene.add(mouseMesh)
 
 
 
+    window.addEventListener("resize", () => {
+        // Update sizes
+        sizes.width = window.innerWidth;
+        sizes.height = window.innerHeight;
 
+        // Update camera
+        camera.aspect = sizes.width / sizes.height;
+        camera.updateProjectionMatrix();
+
+        // Update renderer
+        renderer.setSize(sizes.width, sizes.height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
+
+
+    let offset_width = document.getElementById("options").offsetWidth
     window.addEventListener('mousemove', (event) => {
         // Update the mouse variable
         event.preventDefault();
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.x = ((event.clientX - offset_width) / window.innerWidth) * 2 - 1
+        DEBUG.innerText = JSON.stringify(offset_width)
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-        DEBUG.innerText = JSON.stringify(window.innerWidth)
-        mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 1100
-        mouseMesh.position.y = mouse.y * ((window.innerHeight) * 2 - 1) / 1100
+        // DEBUG.innerText = JSON.stringify(window.innerWidth)
+        mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 750
+        mouseMesh.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
         //mouseMesh.position.copy(pos);
 
     });

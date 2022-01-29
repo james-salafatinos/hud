@@ -7,14 +7,22 @@
   <link rel="stylesheet" href="index.css" />
 </head>
 
-<body id = 'canvas'>
-  <video></video>
-  <p id="close"> &#10006;</p>
-  <p id="start"> &#10047;</p>
-  <p id="debug"> test</p>
-  <video autoplay="true" id="videoElement"></video>
+<body>
+  <!-- This <video> makes you be able to see what is being screen recorded -->
+  <video id='video' style="display:none"></video>
+
+  <div id='options'>
+    <p id="close"> &#10006;</p>
+    <p id="start"> &#10047;</p>
+    <p id="debug"> test</p>
+  </div>
+  <div id='canvas'></div>
 </body>
 <!-- <script src="./renderer.js" defer></script> -->
-<script type = "module" src="./app.js"></script>
+<script type="module" src="./app.js"></script>
+<script src="https://unpkg.com/@tensorflow/tfjs"></script>
+<script src="https://unpkg.com/@tensorflow-models/mobilenet"></script>
+<script src="https://unpkg.com/@tensorflow-models/knn-classifier"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 </html>
