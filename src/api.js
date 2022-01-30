@@ -3,15 +3,15 @@ const { contextBridge, ipcRenderer, desktopCapturer } = require('electron')
 /*
 ##########################################################################################
 
-
+Globals
 
 ##########################################################################################
 */
 const mobilenet = require('@tensorflow-models/mobilenet')
 const knnClassifier = require('@tensorflow-models/knn-classifier')
-const backend = require('@tensorflow/tfjs-node')
+// const backend = require('@tensorflow/tfjs-node')
 const tf = require('@tensorflow/tfjs-core')
-const tfData = require('@tensorflow/tfjs-data')
+// const tfData = require('@tensorflow/tfjs-data')
 
 var knnClassifierModel;
 var mobilenetModel;
@@ -94,6 +94,7 @@ contextBridge.exposeInMainWorld("api", {
                     //Image from stream
                     let img;
                     img = tf.browser.fromPixels(webcamInput);
+                    console.log(img)
 
                     //Get model weights
                     const activation = mobilenetModel.infer(img, "conv_preds");
@@ -145,49 +146,33 @@ contextBridge.exposeInMainWorld("api", {
                 return videoElement
             }
 
-            //Add a custom dataset class with an image and a name for it
-            const addDatasetClass = async (img, classLabel) => {
-                console.log("Added class: ", classLabel);
-                classes.push(classLabel);
-
-                // Get the intermediate activation of MobileNet 'conv_preds' and pass that
-                // to the KNN classifier.
-                const activation = mobilenetModel.infer(img, "conv_preds");
-
-                // Pass the intermediate activation to the classifier.
-                knnClassifierModel.addExample(activation, classLabel);
-
-                // Dispose the tensor to release the memory.
-                img.dispose();
-            };
-
             await initialize()
             await imageClassificationWithTransferLearningOnWebcam(source)
 
         }
 
 
-        // Get the available video sources
-        async function selectSource(source) {
-            const constraints = {
-                audio: false,
-                video: {
-                    mandatory: {
-                        chromeMediaSource: 'desktop',
-                        chromeMediaSourceId: source.id
-                    },
-                }
-            };
+        // // Get the available video sources
+        // async function selectSource(source) {
+        //     const constraints = {
+        //         audio: false,
+        //         video: {
+        //             mandatory: {
+        //                 chromeMediaSource: 'desktop',
+        //                 chromeMediaSourceId: source.id
+        //             },
+        //         }
+        //     };
 
-            //To Check devices
-            // navigator.mediaDevices.enumerateDevices().then((d) => {
-            //     console.log(d)
-            // })
-            const videoElement = document.getElementById('video');
-            const stream = await navigator.mediaDevices.getUserMedia(constraints)
-            videoElement.srcObject = stream;
-            videoElement.play();
-        }
+        //     //To Check devices
+        //     // navigator.mediaDevices.enumerateDevices().then((d) => {
+        //     //     console.log(d)
+        //     // })
+        //     const videoElement = document.getElementById('video');
+        //     const stream = await navigator.mediaDevices.getUserMedia(constraints)
+        //     videoElement.srcObject = stream;
+        //     videoElement.play();
+        // }
 
 
 
