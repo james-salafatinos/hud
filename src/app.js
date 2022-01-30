@@ -1,5 +1,5 @@
 import * as THREE from './modules/three.module.js';
-
+import { OrbitControls } from './modules/OrbitControls.js'
 // /*
 // VIDEO STREAM
 // */
@@ -77,31 +77,39 @@ CLOSE_BTN.addEventListener('click', () => {
     api.close()
 })
 
-let isDragging;
+let isDragging = false;
 window.addEventListener('mousedown', () => {
-
+    isDragging = true;
     console.log(event)
-    if (blockHold) {
+    if (blockHold && isDragging) {
 
-        isDrawing = true
-        
 
-        cube = createCube(Math.random(), 0,Math.random())
+        cube = createCube(0, 0, 0)
         scene.add(cube)
+
+
 
         // Update the mouse variable
         event.preventDefault();
-        mouse.x = ((event.clientX ) / window.innerWidth) * 2 - 1
+        mouse.x = ((event.clientX) / window.innerWidth) * 2 - 1
         // DEBUG.innerText = JSON.stringify(offset_width)
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
         // DEBUG.innerText = JSON.stringify(window.innerWidth)
         cube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 750
         cube.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
+
+        
+        raycaster = new THREE.Raycaster();
+
+        // console.log("pointer" ,pointer, "intersects",intersects, mouseMesh)
     }
 
 })
 
+window.addEventListener('mouseup', () => {
+    isDragging = false
+})
 
 //Internal Libraries
 
@@ -115,6 +123,10 @@ let rect;
 let frameIndex = 0;
 let createCube
 let createRect;
+let createRaycasterPlane
+let raycaster = new THREE.Raycaster();
+let pointer = new THREE.Vector2();
+
 init();
 animate();
 
@@ -122,10 +134,10 @@ function init() {
 
     scene = new THREE.Scene();
 
-    const axesHelper = new THREE.AxesHelper(5);
-    scene.add(axesHelper);
-    const gridHelper = new THREE.GridHelper(6, 2);
-    scene.add(gridHelper);
+    // const axesHelper = new THREE.AxesHelper(5);
+    // scene.add(axesHelper);
+    // const gridHelper = new THREE.GridHelper(6, 2);
+    // scene.add(gridHelper);
 
 
 
@@ -137,10 +149,15 @@ function init() {
     domCanvas.appendChild(renderer.domElement);
 
     // LIGHTS
-    const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
+    const light = new THREE.PointLight(0xeeeeff, 0x777788, 0.75);
     light.position.set(0.5, 1, 0.75);
     scene.add(light);
     scene.add(new THREE.AmbientLight(0x404040));
+
+    let sideLight = new THREE.PointLight(0xeeeeff, .5)
+    sideLight.position.x = 10
+    sideLight.lookAt(0, 0, 0)
+    scene.add(new THREE.PointLight(0xd3fe30, .5))
 
     //Camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
@@ -148,14 +165,17 @@ function init() {
     camera.lookAt(0, 0, 0)
 
 
+    // // Controls
+    // const controls = new OrbitControls(camera, canvas);
+    // controls.enableDamping = true;
 
     createCube = function (_x, _y, _z) {
-        let mat = new THREE.MeshBasicMaterial({
-            wireframe: true,
+        let mat = new THREE.MeshLambertMaterial({
+            wireframe: false,
             transparent: false,
-            depthTest: false,
+            depthTest: true,
             side: THREE.DoubleSide,
-            color: new THREE.Color(0x00fe00)
+            color: new THREE.Color(0xd3fe30)
         });
         let geo = new THREE.BoxGeometry(.5, .5, .5)
         let mesh = new THREE.Mesh(geo, mat)
@@ -165,8 +185,47 @@ function init() {
         return mesh
     }
 
+
+    createRaycasterPlane = function (_x, _y, _z) {
+        let mat = new THREE.MeshLambertMaterial({
+            wireframe: false,
+            transparent: false,
+            depthTest: true,
+            side: THREE.DoubleSide,
+            color: new THREE.Color(0xd3fe30)
+        });
+        let geo = new THREE.BoxGeometry(10,  10)
+        let mesh = new THREE.Mesh(geo, mat)
+        mesh.position.x = _x
+        mesh.position.y = _y
+        mesh.position.z = _z
+        return mesh
+    }
+
     // cube = createCube(0, 0, 1)
     // scene.add(cube)
+
+    // createRaycasterPlane = function(){
+    //     let mat = new THREE.MeshBasicMaterial({
+    //         wireframe: false,
+    //         transparent: false,
+    //         depthTest: true,
+    //         side: THREE.DoubleSide,
+    //         color: new THREE.Color(25,220,12)
+    //     });
+    //     let geo = new THREE.PlaneBufferGeometry(5, 4)
+    //     let mesh = new THREE.Mesh(geo, mat)
+
+    //     // mesh.lookAt(0,-1,0)
+    //     // mesh.name = "rayCasterPlane"
+    //     return mesh
+
+    // }
+    let raycasterPlane = createRaycasterPlane(0, -10, 0)
+    raycasterPlane.lookAt(0,0,0)
+    scene.add(raycasterPlane)
+    console.log('Raycaster mesh', raycasterPlane)
+
 
     createRect = function (_x, _y, _z) {
         let mat = new THREE.MeshBasicMaterial({
@@ -183,7 +242,7 @@ function init() {
         mesh.position.z = _z
         return mesh
     }
-    let rect = createRect(0, 0, 0)
+    rect = createRect(0, 0, 0)
     scene.add(rect)
 
 
@@ -236,6 +295,15 @@ function init() {
         mouseMesh.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
         //mouseMesh.position.copy(pos);
 
+        pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1/ 750
+        pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1/ 750
+
+       
+
+        // calculate objects intersecting the picking ray
+
+
+
     });
 
 }
@@ -255,7 +323,14 @@ function animate() {
     mouseMesh.rotation.y += .0001
     mouseMesh.rotation.z += .0001
 
-
+    if (isDragging) {
+        rect.position.x += .05
+        raycaster.setFromCamera(pointer, camera);
+        const intersects = raycaster.intersectObjects(scene.children, false);
+        console.log(mouse.x, mouse.y,raycaster, intersects)
+ 
+    }
+    // controls.update()
     //Frame Shut Down
     prevTime = time;
     frameIndex++;
