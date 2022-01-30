@@ -87,6 +87,8 @@ window.addEventListener('mousedown', () => {
         cube = createCube(0, 0, 0)
         scene.add(cube)
 
+        smallCube = createSmallCube(0, 0, 0)
+        scene.add(smallCube)
 
 
         // Update the mouse variable
@@ -99,8 +101,9 @@ window.addEventListener('mousedown', () => {
         cube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 750
         cube.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
 
-        
-        raycaster = new THREE.Raycaster();
+        smallCube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 750
+        smallCube.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
+        // raycaster = new THREE.Raycaster();
 
         // console.log("pointer" ,pointer, "intersects",intersects, mouseMesh)
     }
@@ -119,11 +122,14 @@ let stats;
 //Required for NOCLIPCONTROLS
 let prevTime = performance.now();
 let cube;
+let smallCube;
 let rect;
 let frameIndex = 0;
 let createCube
+let createSmallCube
 let createRect;
 let createRaycasterPlane
+
 let raycaster = new THREE.Raycaster();
 let pointer = new THREE.Vector2();
 
@@ -185,6 +191,22 @@ function init() {
         return mesh
     }
 
+    createSmallCube = function (_x, _y, _z) {
+        let mat = new THREE.MeshLambertMaterial({
+            wireframe: true,
+            transparent: false,
+            depthTest: true,
+            side: THREE.DoubleSide,
+            color: new THREE.Color(0xd3dd21)
+        });
+        let geo = new THREE.BoxGeometry(.2, .2, .2)
+        let mesh = new THREE.Mesh(geo, mat)
+        mesh.position.x = _x
+        mesh.position.y = _y
+        mesh.position.z = _z
+        return mesh
+    }
+
 
     createRaycasterPlane = function (_x, _y, _z) {
         let mat = new THREE.MeshLambertMaterial({
@@ -194,7 +216,7 @@ function init() {
             side: THREE.DoubleSide,
             color: new THREE.Color(0xd3fe30)
         });
-        let geo = new THREE.BoxGeometry(10,  10)
+        let geo = new THREE.BoxGeometry(10, 10)
         let mesh = new THREE.Mesh(geo, mat)
         mesh.position.x = _x
         mesh.position.y = _y
@@ -222,7 +244,7 @@ function init() {
 
     // }
     let raycasterPlane = createRaycasterPlane(0, -10, 0)
-    raycasterPlane.lookAt(0,0,0)
+    raycasterPlane.lookAt(0, 0, 0)
     scene.add(raycasterPlane)
     console.log('Raycaster mesh', raycasterPlane)
 
@@ -295,10 +317,10 @@ function init() {
         mouseMesh.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
         //mouseMesh.position.copy(pos);
 
-        pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1/ 750
-        pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1/ 750
+        pointer.x = (event.clientX / window.innerWidth) * 2 - 1 / 750
+        pointer.y = - (event.clientY / window.innerHeight) * 2 + 1 / 750
 
-       
+
 
         // calculate objects intersecting the picking ray
 
@@ -325,10 +347,11 @@ function animate() {
 
     if (isDragging) {
         rect.position.x += .05
+        smallCube.position.x +=.03
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(scene.children, false);
-        console.log(mouse.x, mouse.y,raycaster, intersects)
- 
+        console.log(mouse.x, mouse.y, raycaster, intersects)
+       
     }
     // controls.update()
     //Frame Shut Down

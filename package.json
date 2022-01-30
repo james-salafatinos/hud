@@ -48,7 +48,7 @@
     "@tensorflow-models/knn-classifier": "^1.2.2",
     "@tensorflow-models/mobilenet": "^2.0.4",
     "@tensorflow-models/posenet": "^2.2.1",
-    "@tensorflow/tfjs-node": "",
+    "@tensorflow/tfjs-node": "1.7.4",
     "electron-reload": "^2.0.0-alpha.1",
     "electron-squirrel-startup": "^1.0.0",
     "systeminformation": "^5.10.7",
