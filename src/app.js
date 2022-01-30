@@ -11,6 +11,7 @@ api.passthru()
 const CLOSE_BTN = document.getElementById('close')
 const START_BTN = document.getElementById('start')
 const DEBUG = document.getElementById('debug')
+const INPUT = document.getElementById('input-label')
 let mouseMesh;
 var mouse = new THREE.Vector2();
 
@@ -32,6 +33,14 @@ window.addEventListener('keydown', (event) => {
     //         api.ignore()
     //         break;  
     // }
+
+});
+
+const screenshotButton = document.getElementById('screenshot')
+screenshotButton.addEventListener('click', (event) => {
+    let class_label = document.getElementById("input-label").value;
+    api.addCustomClass(`Test: ${class_label}`)
+
 
 });
 
@@ -58,6 +67,15 @@ START_BTN.addEventListener('click', () => {
 START_BTN.addEventListener('mouseenter', () => {
     api.block()
 })
+
+INPUT.addEventListener('mouseenter', () => {
+    // api.block()
+    document.getElementById("input-label").focus()
+})
+// INPUT.addEventListener('mouseleave', () => {
+//     api.passthru()
+// })
+
 START_BTN.addEventListener('mouseleave', () => {
     if (blockHold) {
         api.block()
@@ -91,18 +109,25 @@ window.addEventListener('mousedown', () => {
         scene.add(smallCube)
 
 
+
         // Update the mouse variable
         event.preventDefault();
-        mouse.x = ((event.clientX) / window.innerWidth) * 2 - 1
+        mouse.x = ((event.clientX - offsetWidth) / window.innerWidth) * 2 - 1
+        // DEBUG.innerText = JSON.stringify(offset_width)
+        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+        event.preventDefault();
+        mouse.x = ((event.clientX - offset_width) / window.innerWidth) * 2 - 1
         // DEBUG.innerText = JSON.stringify(offset_width)
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-        // DEBUG.innerText = JSON.stringify(window.innerWidth)
-        cube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 750
-        cube.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
 
-        smallCube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 750
-        smallCube.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
+        // DEBUG.innerText = JSON.stringify(window.innerWidth)
+        cube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 500
+        cube.position.y = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 500
+
+        smallCube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 500
+        smallCube.position.y = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 500
+
         // raycaster = new THREE.Raycaster();
 
         // console.log("pointer" ,pointer, "intersects",intersects, mouseMesh)
@@ -167,7 +192,7 @@ function init() {
 
     //Camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.y = 5
+    camera.position.z = 1
     camera.lookAt(0, 0, 0)
 
 
@@ -183,7 +208,7 @@ function init() {
             side: THREE.DoubleSide,
             color: new THREE.Color(0xd3fe30)
         });
-        let geo = new THREE.BoxGeometry(.5, .5, .5)
+        let geo = new THREE.BoxGeometry(.1, .1, .1)
         let mesh = new THREE.Mesh(geo, mat)
         mesh.position.x = _x
         mesh.position.y = _y
@@ -210,8 +235,8 @@ function init() {
 
     createRaycasterPlane = function (_x, _y, _z) {
         let mat = new THREE.MeshLambertMaterial({
-            wireframe: false,
-            transparent: false,
+            wireframe: true,
+
             depthTest: true,
             side: THREE.DoubleSide,
             color: new THREE.Color(0xd3fe30)
@@ -243,7 +268,7 @@ function init() {
     //     return mesh
 
     // }
-    let raycasterPlane = createRaycasterPlane(0, -10, 0)
+    let raycasterPlane = createRaycasterPlane(0, 0, -10)
     raycasterPlane.lookAt(0, 0, 0)
     scene.add(raycasterPlane)
     console.log('Raycaster mesh', raycasterPlane)
@@ -313,8 +338,8 @@ function init() {
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
         // DEBUG.innerText = JSON.stringify(window.innerWidth)
-        mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 750
-        mouseMesh.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
+        mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 1000
+        mouseMesh.position.y = -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 1000
         //mouseMesh.position.copy(pos);
 
         pointer.x = (event.clientX / window.innerWidth) * 2 - 1 / 750
@@ -346,12 +371,41 @@ function animate() {
     mouseMesh.rotation.z += .0001
 
     if (isDragging) {
+
+        //Requires render side updating, RATHER than in MOUSEDOWN
         rect.position.x += .05
-        smallCube.position.x +=.03
+        //Requires render side updating
+        smallCube.position.x = mouse.x * 1
+        smallCube.position.y = mouse.y * 1
+
+        //Requires render side updating
+        cube.position.x = mouse.x * 2
+        cube.position.y = mouse.y * 2
+
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(scene.children, false);
         console.log(mouse.x, mouse.y, raycaster, intersects)
-       
+
+        var vec = new THREE.Vector3(); // create once and reuse
+        var pos = new THREE.Vector3(); // create once and reuse
+
+        vec.set(
+            (mouse.x / window.innerWidth) * 2 - 1,
+            - (mouse.y / window.innerHeight) * 2 + 1,
+            0.5);
+
+        vec.unproject(camera);
+
+        vec.sub(camera.position).normalize();
+
+        var distance = - camera.position.z / vec.z;
+
+        pos.copy(camera.position).add(vec.multiplyScalar(distance));
+        console.log("distance", distance, pos, vec)
+
+
+        cube
+
     }
     // controls.update()
     //Frame Shut Down

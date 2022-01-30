@@ -1,6 +1,6 @@
 
 .env
-
+/archive
 # Logs
 logs
 *.log
