@@ -1,9 +1,4 @@
 import * as THREE from './modules/three.module.js';
-import { PointerLockControls } from "./modules/PointerLockControls.js";
-import { GUI } from "./modules/dat.gui.module.js";
-import Stats from './modules/stats.module.js';
-import { NoClipControls } from './modules/NoClipControls.js'
-import { PhysicsObject } from './modules/PhysicsObject.js'
 
 // /*
 // VIDEO STREAM
@@ -11,28 +6,7 @@ import { PhysicsObject } from './modules/PhysicsObject.js'
 
 //This directly calls the API Stream from api.js
 api.stream()
-
-// /*
-// MACHINE LEARNING
-// */
-const createKNNClassifier = async () => {
-    console.log("Loading KNN Classifier");
-    return await knnClassifier.create();
-};
-const createMobileNetModel = async () => {
-    console.log("Loading Mobilenet Model");
-    return await mobilenet.load();
-};
-const createWebcamInput = async () => {
-    console.log("Loading Webcam Input");
-    const webcamElement = await document.getElementById("video");
-    return await tf.data.webcam(webcamElement);
-};
-
-const mobilenetModel = await createMobileNetModel();
-const knnClassifierModel = await createKNNClassifier();
-const webcamInput = await createWebcamInput();
-
+api.passthru()
 
 const CLOSE_BTN = document.getElementById('close')
 const START_BTN = document.getElementById('start')
@@ -41,24 +15,91 @@ let mouseMesh;
 var mouse = new THREE.Vector2();
 
 // STart and close Button (Top Left)
+
+
+
+window.addEventListener('keydown', (event) => {
+
+    if (event.altKey && event.key === 'd') {
+        console.log(event)
+        DEBUG.innerText = JSON.stringify(Math.random())
+
+    }
+    // switch (event.code) {
+    //     case 'Space':
+    //         // api.addCustomClass()               
+    //         console.log(event )                 
+    //         api.ignore()
+    //         break;  
+    // }
+
+});
+
+let blockHold = false;
+let startButtonClicked = false
+let isDrawing = false;
 START_BTN.addEventListener('click', () => {
-    api.start()
-    START_BTN.style.color = '#7aff69'
+    console.log(blockHold, startButtonClicked)
+
+    if (startButtonClicked) {
+        console.log('yooo')
+        START_BTN.style.color = '#affff9'
+        blockHold = false;
+        startButtonClicked = false;
+        api.passthru()
+    } else {
+        api.addCustomClass('test-label-2')
+        START_BTN.style.color = '#7aff69'
+        blockHold = true;
+        startButtonClicked = true;
+    }
+
 })
 START_BTN.addEventListener('mouseenter', () => {
-    api.ignore()
+    api.block()
 })
 START_BTN.addEventListener('mouseleave', () => {
-    api.allow()
+    if (blockHold) {
+        api.block()
+    } else {
+        api.passthru()
+    }
+
+})
+
+CLOSE_BTN.addEventListener('mouseenter', () => {
+    api.block()
+})
+CLOSE_BTN.addEventListener('mouseleave', () => {
+    api.passthru()
 })
 CLOSE_BTN.addEventListener('click', () => {
     api.close()
 })
-CLOSE_BTN.addEventListener('mouseenter', () => {
-    api.ignore()
-})
-CLOSE_BTN.addEventListener('mouseleave', () => {
-    api.allow()
+
+let isDragging;
+window.addEventListener('mousedown', () => {
+
+    console.log(event)
+    if (blockHold) {
+
+        isDrawing = true
+        
+
+        cube = createCube(Math.random(), 0,Math.random())
+        scene.add(cube)
+
+        // Update the mouse variable
+        event.preventDefault();
+        mouse.x = ((event.clientX ) / window.innerWidth) * 2 - 1
+        // DEBUG.innerText = JSON.stringify(offset_width)
+        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+        // DEBUG.innerText = JSON.stringify(window.innerWidth)
+        cube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 750
+        cube.position.z = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 750
+    }
+
 })
 
 
@@ -70,8 +111,10 @@ let stats;
 //Required for NOCLIPCONTROLS
 let prevTime = performance.now();
 let cube;
+let rect;
 let frameIndex = 0;
-
+let createCube
+let createRect;
 init();
 animate();
 
@@ -104,11 +147,9 @@ function init() {
     camera.position.y = 5
     camera.lookAt(0, 0, 0)
 
-    //NO CLIP CONTROLS
-    controls = new NoClipControls(window, camera, document);
 
 
-    let createCube = function (_x, _y, _z) {
+    createCube = function (_x, _y, _z) {
         let mat = new THREE.MeshBasicMaterial({
             wireframe: true,
             transparent: false,
@@ -124,8 +165,27 @@ function init() {
         return mesh
     }
 
-    cube = createCube(0, 0, 1)
-    scene.add(cube)
+    // cube = createCube(0, 0, 1)
+    // scene.add(cube)
+
+    createRect = function (_x, _y, _z) {
+        let mat = new THREE.MeshBasicMaterial({
+            wireframe: true,
+            transparent: false,
+            depthTest: false,
+            side: THREE.DoubleSide,
+            color: new THREE.Color(0x4f0e40)
+        });
+        let geo = new THREE.BoxGeometry(.5, 0, .5)
+        let mesh = new THREE.Mesh(geo, mat)
+        mesh.position.x = _x
+        mesh.position.y = _y
+        mesh.position.z = _z
+        return mesh
+    }
+    let rect = createRect(0, 0, 0)
+    scene.add(rect)
+
 
     let createMouse = function (_x, _y, _z) {
         let mat = new THREE.MeshBasicMaterial({
@@ -168,7 +228,7 @@ function init() {
         // Update the mouse variable
         event.preventDefault();
         mouse.x = ((event.clientX - offset_width) / window.innerWidth) * 2 - 1
-        DEBUG.innerText = JSON.stringify(offset_width)
+        // DEBUG.innerText = JSON.stringify(offset_width)
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
         // DEBUG.innerText = JSON.stringify(window.innerWidth)
@@ -188,9 +248,6 @@ function animate() {
 
     //Required for NOCLIPCONTROLS
     const time = performance.now();
-
-    controls.update(time, prevTime)
-
 
     renderer.render(scene, camera);
 

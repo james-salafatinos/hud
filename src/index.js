@@ -17,12 +17,13 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: width,
     height: height,
-    // width: 3500,
+    // width: 1000,
     // height: 900,
     frame: false,
     autoHideMenuBar: true,
     webPreferences: {
       preload: __dirname + "\\api.js",
+
     },
     transparent: true,
     alwaysOnTop: true,
@@ -31,23 +32,22 @@ const createWindow = () => {
   ipcMain.on('close-app', () => {
     app.quit()
   })
-  ipcMain.on('start', () => {
+  ipcMain.on('passthru', () => {
     mainWindow.setIgnoreMouseEvents(true, { forward: true });
   })
-  ipcMain.on('ignore', () => {
-    mainWindow.setIgnoreMouseEvents(false, { forward: true });
+  ipcMain.on('block', () => {
+    mainWindow.setIgnoreMouseEvents(false);
   })
-  ipcMain.on('allow', () => {
-    mainWindow.setIgnoreMouseEvents(true, { forward: true });
-
+  ipcMain.on('blockHold', () => {
+    mainWindow.setIgnoreMouseEvents(false);
   })
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   // // Open the DevTools.
-  mainWindow.webContents.openDevTools();
-};
+  // mainWindow.webContents.openDevTools();
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
