@@ -12,44 +12,35 @@ const CLOSE_BTN = document.getElementById('close')
 const START_BTN = document.getElementById('start')
 const DEBUG = document.getElementById('debug')
 const INPUT = document.getElementById('input-label')
+const SCREENSHOT_BTN = document.getElementById('screenshot')
+let offset_width = document.getElementById("options").offsetWidth
 let mouseMesh;
-var mouse = new THREE.Vector2();
-
-// STart and close Button (Top Left)
-
-
-
-window.addEventListener('keydown', (event) => {
-
-    if (event.altKey && event.key === 'd') {
-        console.log(event)
-        DEBUG.innerText = JSON.stringify(Math.random())
-
-    }
-    // switch (event.code) {
-    //     case 'Space':
-    //         // api.addCustomClass()               
-    //         console.log(event )                 
-    //         api.ignore()
-    //         break;  
-    // }
-
-});
-
-const screenshotButton = document.getElementById('screenshot')
-screenshotButton.addEventListener('click', (event) => {
-    let class_label = document.getElementById("input-label").value;
-    api.addCustomClass(`Test: ${class_label}`)
-
-
-});
-
+let mouse = new THREE.Vector2();
 let blockHold = false;
 let startButtonClicked = false
-let isDrawing = false;
+let TOP_RIGHT = new THREE.Vector2(5, 4)
+let TOP_LEFT = new THREE.Vector2(-5, 4)
+let isDragging = false;
+let camera, scene, renderer
+let prevTime = performance.now();
+let cube;
+let smallCube;
+let rect;
+let frameIndex = 0;
+let createCube
+let createSmallCube
+let createRect;
+let createRaycasterPlane
+let raycaster = new THREE.Raycaster();
+let pointer = new THREE.Vector2();
+
+
+init();
+animate();
+
+
 START_BTN.addEventListener('click', () => {
     console.log(blockHold, startButtonClicked)
-
     if (startButtonClicked) {
         console.log('yooo')
         START_BTN.style.color = '#affff9'
@@ -62,19 +53,13 @@ START_BTN.addEventListener('click', () => {
         blockHold = true;
         startButtonClicked = true;
     }
-
 })
+
+
 START_BTN.addEventListener('mouseenter', () => {
     api.block()
 })
 
-INPUT.addEventListener('mouseenter', () => {
-    // api.block()
-    document.getElementById("input-label").focus()
-})
-// INPUT.addEventListener('mouseleave', () => {
-//     api.passthru()
-// })
 
 START_BTN.addEventListener('mouseleave', () => {
     if (blockHold) {
@@ -82,34 +67,55 @@ START_BTN.addEventListener('mouseleave', () => {
     } else {
         api.passthru()
     }
-
 })
+
 
 CLOSE_BTN.addEventListener('mouseenter', () => {
     api.block()
 })
+
+
 CLOSE_BTN.addEventListener('mouseleave', () => {
     api.passthru()
 })
+
+
 CLOSE_BTN.addEventListener('click', () => {
     api.close()
 })
 
-let isDragging = false;
+
+INPUT.addEventListener('mouseenter', () => {
+    document.getElementById("input-label").focus()
+})
+
+SCREENSHOT_BTN.addEventListener('click', (event) => {
+    let class_label = document.getElementById("input-label").value;
+    api.addCustomClass(`Test: ${class_label}`)
+});
+
+
+window.addEventListener('keydown', (event) => {
+    if (event.altKey && event.key === 'd') {
+        console.log(event)
+        DEBUG.innerText = JSON.stringify(Math.random())
+    }
+});
+
+
+window.addEventListener('mouseup', () => {
+    isDragging = false
+})
+
+
 window.addEventListener('mousedown', () => {
     isDragging = true;
     console.log(event)
     if (blockHold && isDragging) {
-
-
         cube = createCube(0, 0, 0)
         scene.add(cube)
-
         smallCube = createSmallCube(0, 0, 0)
         scene.add(smallCube)
-
-
-
         // Update the mouse variable
         event.preventDefault();
         mouse.x = ((event.clientX - offsetWidth) / window.innerWidth) * 2 - 1
@@ -120,7 +126,6 @@ window.addEventListener('mousedown', () => {
         // DEBUG.innerText = JSON.stringify(offset_width)
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-
         // DEBUG.innerText = JSON.stringify(window.innerWidth)
         cube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 500
         cube.position.y = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 500
@@ -128,49 +133,49 @@ window.addEventListener('mousedown', () => {
         smallCube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 500
         smallCube.position.y = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 500
 
-        // raycaster = new THREE.Raycaster();
-
-        // console.log("pointer" ,pointer, "intersects",intersects, mouseMesh)
     }
 
 })
 
-window.addEventListener('mouseup', () => {
-    isDragging = false
-})
+window.addEventListener("resize", () => {
+    // Update sizes
+    sizes.width = window.innerWidth;
+    sizes.height = window.innerHeight;
 
-//Internal Libraries
+    // Update camera
+    camera.aspect = sizes.width / sizes.height;
+    camera.updateProjectionMatrix();
 
-//THREE JS
-let camera, scene, renderer, composer, controls
-let stats;
-//Required for NOCLIPCONTROLS
-let prevTime = performance.now();
-let cube;
-let smallCube;
-let rect;
-let frameIndex = 0;
-let createCube
-let createSmallCube
-let createRect;
-let createRaycasterPlane
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
 
-let raycaster = new THREE.Raycaster();
-let pointer = new THREE.Vector2();
 
-init();
-animate();
+
+
+window.addEventListener('mousemove', (event) => {
+    // Update the mouse variable
+    event.preventDefault();
+    mouse.x = ((event.clientX - offset_width) / window.innerWidth) * 2 - 1
+    // DEBUG.innerText = JSON.stringify(offset_width)
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+    // DEBUG.innerText = JSON.stringify(window.innerWidth)
+    console.log(window.innerWidth, window.innerHeight)
+    mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / (360)
+    mouseMesh.position.y = -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360)
+    console.log("MouseMesh.position", mouseMesh.position)
+    //mouseMesh.position.copy(pos);
+
+    pointer.x = (event.clientX / window.innerWidth) * 2 - 1 / 360
+    pointer.y = - (event.clientY / window.innerHeight) * 2 + 1 / 360
+
+});
 
 function init() {
 
     scene = new THREE.Scene();
-
-    // const axesHelper = new THREE.AxesHelper(5);
-    // scene.add(axesHelper);
-    // const gridHelper = new THREE.GridHelper(6, 2);
-    // scene.add(gridHelper);
-
-
 
     //Renderer
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -192,13 +197,9 @@ function init() {
 
     //Camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.z = 1
+    camera.position.z = 10
     camera.lookAt(0, 0, 0)
 
-
-    // // Controls
-    // const controls = new OrbitControls(camera, canvas);
-    // controls.enableDamping = true;
 
     createCube = function (_x, _y, _z) {
         let mat = new THREE.MeshLambertMaterial({
@@ -249,31 +250,6 @@ function init() {
         return mesh
     }
 
-    // cube = createCube(0, 0, 1)
-    // scene.add(cube)
-
-    // createRaycasterPlane = function(){
-    //     let mat = new THREE.MeshBasicMaterial({
-    //         wireframe: false,
-    //         transparent: false,
-    //         depthTest: true,
-    //         side: THREE.DoubleSide,
-    //         color: new THREE.Color(25,220,12)
-    //     });
-    //     let geo = new THREE.PlaneBufferGeometry(5, 4)
-    //     let mesh = new THREE.Mesh(geo, mat)
-
-    //     // mesh.lookAt(0,-1,0)
-    //     // mesh.name = "rayCasterPlane"
-    //     return mesh
-
-    // }
-    let raycasterPlane = createRaycasterPlane(0, 0, -10)
-    raycasterPlane.lookAt(0, 0, 0)
-    scene.add(raycasterPlane)
-    console.log('Raycaster mesh', raycasterPlane)
-
-
     createRect = function (_x, _y, _z) {
         let mat = new THREE.MeshBasicMaterial({
             wireframe: true,
@@ -289,8 +265,6 @@ function init() {
         mesh.position.z = _z
         return mesh
     }
-    rect = createRect(0, 0, 0)
-    scene.add(rect)
 
 
     let createMouse = function (_x, _y, _z) {
@@ -309,49 +283,19 @@ function init() {
         return mesh
     }
 
+
+
+    //Object Creation
+    let raycasterPlane = createRaycasterPlane(0, 0, -10)
+    raycasterPlane.lookAt(0, 0, 0)
+    scene.add(raycasterPlane)
+    console.log('Raycaster mesh', raycasterPlane)
+
+    rect = createRect(0, 0, 0)
+    scene.add(rect)
+
     mouseMesh = createMouse(0, 0, 0)
     scene.add(mouseMesh)
-
-
-
-    window.addEventListener("resize", () => {
-        // Update sizes
-        sizes.width = window.innerWidth;
-        sizes.height = window.innerHeight;
-
-        // Update camera
-        camera.aspect = sizes.width / sizes.height;
-        camera.updateProjectionMatrix();
-
-        // Update renderer
-        renderer.setSize(sizes.width, sizes.height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    });
-
-
-    let offset_width = document.getElementById("options").offsetWidth
-    window.addEventListener('mousemove', (event) => {
-        // Update the mouse variable
-        event.preventDefault();
-        mouse.x = ((event.clientX - offset_width) / window.innerWidth) * 2 - 1
-        // DEBUG.innerText = JSON.stringify(offset_width)
-        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-        // DEBUG.innerText = JSON.stringify(window.innerWidth)
-        mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 1000
-        mouseMesh.position.y = -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 1000
-        //mouseMesh.position.copy(pos);
-
-        pointer.x = (event.clientX / window.innerWidth) * 2 - 1 / 750
-        pointer.y = - (event.clientY / window.innerHeight) * 2 + 1 / 750
-
-
-
-        // calculate objects intersecting the picking ray
-
-
-
-    });
 
 }
 
@@ -370,13 +314,15 @@ function animate() {
     mouseMesh.rotation.y += .0001
     mouseMesh.rotation.z += .0001
 
+
     if (isDragging) {
 
         //Requires render side updating, RATHER than in MOUSEDOWN
         rect.position.x += .05
+
         //Requires render side updating
-        smallCube.position.x = mouse.x * 1
-        smallCube.position.y = mouse.y * 1
+        smallCube.position.x = TOP_RIGHT.x + mouse.x * 1
+        smallCube.position.y = TOP_RIGHT.y + mouse.y * 1
 
         //Requires render side updating
         cube.position.x = mouse.x * 2
@@ -402,9 +348,6 @@ function animate() {
 
         pos.copy(camera.position).add(vec.multiplyScalar(distance));
         console.log("distance", distance, pos, vec)
-
-
-        cube
 
     }
     // controls.update()
