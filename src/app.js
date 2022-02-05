@@ -1,4 +1,5 @@
 import * as THREE from './modules/three.module.js';
+import * as MeshFactory from './helpers/MeshFactory.js';
 import { OrbitControls } from './modules/OrbitControls.js'
 // /*
 // VIDEO STREAM
@@ -29,10 +30,9 @@ let rect;
 let frameIndex = 0;
 let createCube
 let createSmallCube
-let createRect;
-let createRaycasterPlane
 let raycaster = new THREE.Raycaster();
 let pointer = new THREE.Vector2();
+let sizes = {}
 
 
 init();
@@ -109,29 +109,23 @@ window.addEventListener('mouseup', () => {
 
 
 window.addEventListener('mousedown', () => {
+    let mx = mouse.x * ((window.innerWidth) * 2 - 1) / 500
+    let my = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 500
     isDragging = true;
-    console.log(event)
+
     if (blockHold && isDragging) {
-        cube = createCube(0, 0, 0)
+
+        cube = MeshFactory.createCube(mx, my, 0)
         scene.add(cube)
-        smallCube = createSmallCube(0, 0, 0)
+        smallCube =  MeshFactory.createSmallCube(mx, my, 0)
         scene.add(smallCube)
-        // Update the mouse variable
-        event.preventDefault();
-        mouse.x = ((event.clientX - offsetWidth) / window.innerWidth) * 2 - 1
-        // DEBUG.innerText = JSON.stringify(offset_width)
-        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-        event.preventDefault();
-        mouse.x = ((event.clientX - offset_width) / window.innerWidth) * 2 - 1
-        // DEBUG.innerText = JSON.stringify(offset_width)
-        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
         // DEBUG.innerText = JSON.stringify(window.innerWidth)
-        cube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 500
-        cube.position.y = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 500
+        cube.position.x = mx
+        cube.position.y = my
 
-        smallCube.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / 500
-        smallCube.position.y = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 500
+        smallCube.position.x = mx
+        smallCube.position.y = my
 
     }
 
@@ -157,19 +151,12 @@ window.addEventListener("resize", () => {
 window.addEventListener('mousemove', (event) => {
     // Update the mouse variable
     event.preventDefault();
-    mouse.x = ((event.clientX - offset_width) / window.innerWidth) * 2 - 1
+    mouse.x = ((event.clientX) / window.innerWidth) * 2 - 1
     // DEBUG.innerText = JSON.stringify(offset_width)
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-    // DEBUG.innerText = JSON.stringify(window.innerWidth)
-    console.log(window.innerWidth, window.innerHeight)
     mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / (360)
     mouseMesh.position.y = -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360)
-    console.log("MouseMesh.position", mouseMesh.position)
-    //mouseMesh.position.copy(pos);
-
-    pointer.x = (event.clientX / window.innerWidth) * 2 - 1 / 360
-    pointer.y = - (event.clientY / window.innerHeight) * 2 + 1 / 360
 
 });
 
@@ -201,105 +188,28 @@ function init() {
     camera.lookAt(0, 0, 0)
 
 
-    createCube = function (_x, _y, _z) {
-        let mat = new THREE.MeshLambertMaterial({
-            wireframe: false,
-            transparent: false,
-            depthTest: true,
-            side: THREE.DoubleSide,
-            color: new THREE.Color(0xd3fe30)
-        });
-        let geo = new THREE.BoxGeometry(.1, .1, .1)
-        let mesh = new THREE.Mesh(geo, mat)
-        mesh.position.x = _x
-        mesh.position.y = _y
-        mesh.position.z = _z
-        return mesh
-    }
-
-    createSmallCube = function (_x, _y, _z) {
-        let mat = new THREE.MeshLambertMaterial({
-            wireframe: true,
-            transparent: false,
-            depthTest: true,
-            side: THREE.DoubleSide,
-            color: new THREE.Color(0xd3dd21)
-        });
-        let geo = new THREE.BoxGeometry(.2, .2, .2)
-        let mesh = new THREE.Mesh(geo, mat)
-        mesh.position.x = _x
-        mesh.position.y = _y
-        mesh.position.z = _z
-        return mesh
-    }
-
-
-    createRaycasterPlane = function (_x, _y, _z) {
-        let mat = new THREE.MeshLambertMaterial({
-            wireframe: true,
-
-            depthTest: true,
-            side: THREE.DoubleSide,
-            color: new THREE.Color(0xd3fe30)
-        });
-        let geo = new THREE.BoxGeometry(10, 10)
-        let mesh = new THREE.Mesh(geo, mat)
-        mesh.position.x = _x
-        mesh.position.y = _y
-        mesh.position.z = _z
-        return mesh
-    }
-
-    createRect = function (_x, _y, _z) {
-        let mat = new THREE.MeshBasicMaterial({
-            wireframe: true,
-            transparent: false,
-            depthTest: false,
-            side: THREE.DoubleSide,
-            color: new THREE.Color(0x4f0e40)
-        });
-        let geo = new THREE.BoxGeometry(.5, 0, .5)
-        let mesh = new THREE.Mesh(geo, mat)
-        mesh.position.x = _x
-        mesh.position.y = _y
-        mesh.position.z = _z
-        return mesh
-    }
-
-
-    let createMouse = function (_x, _y, _z) {
-        let mat = new THREE.MeshBasicMaterial({
-            wireframe: true,
-            transparent: false,
-            depthTest: false,
-            side: THREE.DoubleSide,
-            color: new THREE.Color(0x000e0)
-        });
-        let geo = new THREE.IcosahedronBufferGeometry(.2, 1)
-        let mesh = new THREE.Mesh(geo, mat)
-        mesh.position.x = _x
-        mesh.position.y = _y
-        mesh.position.z = _z
-        return mesh
-    }
-
-
-
+    
     //Object Creation
-    let raycasterPlane = createRaycasterPlane(0, 0, -10)
-    raycasterPlane.lookAt(0, 0, 0)
-    scene.add(raycasterPlane)
-    console.log('Raycaster mesh', raycasterPlane)
+    // let raycasterPlane = MeshFactory.createRaycasterPlane(0, 0, -10)
+    // raycasterPlane.lookAt(0, 0, 0)
+    // scene.add(raycasterPlane)
+    // console.log('Raycaster mesh', raycasterPlane)
 
-    rect = createRect(0, 0, 0)
+    rect = MeshFactory.createRect(0, 0, 0)
+    rect.rotation.x += Math.PI /2
     scene.add(rect)
 
-    mouseMesh = createMouse(0, 0, 0)
+    mouseMesh = MeshFactory.createMouse(0, 0, 0)
     scene.add(mouseMesh)
 
 }
 
-
+let setSize = function ( myMesh, xSize, ySize, zSize){
+    let scaleFactorX = xSize / myMesh.geometry.parameters.width;
+    let scaleFactorY = ySize / myMesh.geometry.parameters.height;
+    let scaleFactorZ = zSize / myMesh.geometry.parameters.depth;
+    myMesh.scale.set( scaleFactorX, scaleFactorY, scaleFactorZ );
+  }
 
 function animate() {
     //Frame Start up
@@ -318,37 +228,20 @@ function animate() {
     if (isDragging) {
 
         //Requires render side updating, RATHER than in MOUSEDOWN
-        rect.position.x += .05
-
+        rect.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / (360*2)
+        rect.position.y = -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360*2) 
+        rect.scale.set(mouse.x * ((window.innerWidth) * 2 - 1) / (360), 1,  -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360) )
+        console.log('MOUSE POS',  mouse.x * ((window.innerWidth) * 2 - 1) / (360),-mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360) )
+        // setSize(rect, mouse.x /10000, -mouse.y /10000, .1)
         //Requires render side updating
-        smallCube.position.x = TOP_RIGHT.x + mouse.x * 1
-        smallCube.position.y = TOP_RIGHT.y + mouse.y * 1
+        smallCube.position.x = mouse.x * 1
+        smallCube.position.y = mouse.y * 1
 
         //Requires render side updating
         cube.position.x = mouse.x * 2
         cube.position.y = mouse.y * 2
 
-        raycaster.setFromCamera(pointer, camera);
-        const intersects = raycaster.intersectObjects(scene.children, false);
-        console.log(mouse.x, mouse.y, raycaster, intersects)
-
-        var vec = new THREE.Vector3(); // create once and reuse
-        var pos = new THREE.Vector3(); // create once and reuse
-
-        vec.set(
-            (mouse.x / window.innerWidth) * 2 - 1,
-            - (mouse.y / window.innerHeight) * 2 + 1,
-            0.5);
-
-        vec.unproject(camera);
-
-        vec.sub(camera.position).normalize();
-
-        var distance = - camera.position.z / vec.z;
-
-        pos.copy(camera.position).add(vec.multiplyScalar(distance));
-        console.log("distance", distance, pos, vec)
-
+       
     }
     // controls.update()
     //Frame Shut Down
