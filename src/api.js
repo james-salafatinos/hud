@@ -11,10 +11,12 @@ const mobilenet = require('@tensorflow-models/mobilenet')
 const knnClassifier = require('@tensorflow-models/knn-classifier')
 // const backend = require('@tensorflow/tfjs-node')
 const tf = require('@tensorflow/tfjs-core')
+const cocoSsd = require('@tensorflow-models/coco-ssd')
 // const tfData = require('@tensorflow/tfjs-data')
 
 var knnClassifierModel;
 var mobilenetModel;
+var cocoSSDModel;
 var webcamInput;
 var classes = []
 var runs = 0
@@ -46,9 +48,6 @@ contextBridge.exposeInMainWorld("api", {
         knnClassifierModel.addExample(activation, class_label);
     },
     stream: () => {
-        /*
-        Wrapper async
-        */
         //Start Capture
         desktopCapturer.getSources({
             types: ['window', 'screen']
@@ -60,10 +59,9 @@ contextBridge.exposeInMainWorld("api", {
             start_predicting(source_id_list[0])
         })
 
+
         async function start_predicting(source) {
             console.log('Begin stream() in api.js')
-
-
             //Async to setup machine learning 
             async function initialize() {
                 const createKNNClassifier = async () => {
@@ -78,6 +76,12 @@ contextBridge.exposeInMainWorld("api", {
                     console.log("Loading Webcam Input!");
                     return await sourceScreen(source)
                 };
+                const createCocoSSDModel = async () => {
+                    console.log("Loading Coco SSD Model!"); 
+                    return await cocoSsd.load()
+                };
+
+                cocoSSDModel = await createCocoSSDModel()
                 knnClassifierModel = await createKNNClassifier()
                 mobilenetModel = await createMobileNetModel();
                 webcamInput = await createWebcamInput();
@@ -94,7 +98,7 @@ contextBridge.exposeInMainWorld("api", {
                     //Image from stream
                     let img;
                     img = tf.browser.fromPixels(webcamInput);
-                    console.log(img)
+                    // console.log(img)
 
                     //Get model weights
                     const activation = mobilenetModel.infer(img, "conv_preds");
@@ -110,7 +114,9 @@ contextBridge.exposeInMainWorld("api", {
                     if (knnClassifierModel.getNumClasses() > 0) {
                         // Get the most likely class and confidences from the classifier module.
                         const result = await knnClassifierModel.predictClass(activation);
-                        console.log("Prediction result", result)
+                        const coco_result = await cocoSSDModel.detect(img)
+                        // console.log("Prediction result,", result)
+                        console.log("Prediction result for Coco,", coco_result)
                         //Printing results to screen
                         document.getElementById("debug").innerText = `
                             prediction: ${result.label}
