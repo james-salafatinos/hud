@@ -34,3 +34,18 @@ body {
 #start:hover{
   color:rgb(123, 255, 105)
 }
+
+#options {
+  font-size: 12px;
+  text-align:right;
+  position: absolute;
+  top: 25px;
+  right: 45px;
+  z-index: 1;
+}
+#canavs {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 3;
+}

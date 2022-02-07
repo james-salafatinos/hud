@@ -1,8 +1,8 @@
 {
-  "name": "overlay",
-  "productName": "overlay",
+  "name": "hud",
+  "productName": "HUD",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "A hud",
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
@@ -24,7 +24,7 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "overlay"
+            "name": "hud"
           }
         },
         {
@@ -45,10 +45,11 @@
     }
   },
   "dependencies": {
-    "@tensorflow-models/coco-ssd": "^2.0.0",
-    "@tensorflow-models/knn-classifier": "1.2.2",
-    "@tensorflow-models/mobilenet": "2.0.4",
-    "@tensorflow/tfjs-node": "1.7.4",
+    "@tensorflow-models/coco-ssd": "^2.2.2",
+    "@tensorflow-models/mobilenet": "^2.1.0",
+    "@tensorflow-models/knn-classifier": "",
+    "@tensorflow/tfjs": "",
+    "@tensorflow/tfjs-node": "",
     "electron-reload": "^2.0.0-alpha.1",
     "electron-squirrel-startup": "^1.0.0",
     "systeminformation": "^5.10.7",

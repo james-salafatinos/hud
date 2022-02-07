@@ -1,7 +1,7 @@
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 
 const path = require('path');
-
+let ctrlBPressed = false;
 
 require('electron-reload')(__dirname)
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -48,7 +48,26 @@ const createWindow = () => {
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   // // // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
+
+  //Register Global Keyobard Events
+  const ret = globalShortcut.register('CommandOrControl+B', () => {
+    console.log('CommandOrControl+B is pressed')
+    if (ctrlBPressed){
+      ctrlBPressed = false;
+      mainWindow.setIgnoreMouseEvents(false);
+      
+    }
+    else{
+      ctrlBPressed = true;
+      mainWindow.setIgnoreMouseEvents(true, { forward: true });
+    }
+
+  })
+
+  if (!ret) {
+    console.log('registration failed')
+  }
 
 
 

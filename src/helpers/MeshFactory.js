@@ -55,7 +55,7 @@ let createRect = function (_x, _y, _z) {
         transparent: false,
         depthTest: false,
         side: THREE.DoubleSide,
-        color: new THREE.Color(0x4f0e40)
+        color: new THREE.Color(0xFF0000)
     });
     let geo = new THREE.BoxGeometry(.5, 0, .5)
     let mesh = new THREE.Mesh(geo, mat)

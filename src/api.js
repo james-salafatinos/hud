@@ -9,14 +9,16 @@ Globals
 */
 const mobilenet = require('@tensorflow-models/mobilenet')
 const knnClassifier = require('@tensorflow-models/knn-classifier')
-// const backend = require('@tensorflow/tfjs-node')
+const backend = require('@tensorflow/tfjs-node')
 const tf = require('@tensorflow/tfjs-core')
 const cocoSsd = require('@tensorflow-models/coco-ssd')
+const tfConverter = require('@tensorflow/tfjs-converter');
+let loadGraphModel = tfConverter.loadGraphModel
 // const tfData = require('@tensorflow/tfjs-data')
 
 var knnClassifierModel;
 var mobilenetModel;
-var cocoSSDModel;
+var ODModel;
 var webcamInput;
 var classes = []
 var runs = 0
@@ -76,16 +78,57 @@ contextBridge.exposeInMainWorld("api", {
                     console.log("Loading Webcam Input!");
                     return await sourceScreen(source)
                 };
-                const createCocoSSDModel = async () => {
-                    console.log("Loading Coco SSD Model!"); 
+                const createODModel = async () => {
+                    console.log("Loading OD Model!");
                     return await cocoSsd.load()
                 };
 
-                cocoSSDModel = await createCocoSSDModel()
+                ODModel = await createODModel()
                 knnClassifierModel = await createKNNClassifier()
                 mobilenetModel = await createMobileNetModel();
                 webcamInput = await createWebcamInput();
             }
+
+            let detectFrame = function (img, model) {
+                // tf.engine().startScope();
+                console.log("OD model,", model)
+                // console.log(process_input(img))
+
+                // let zz = model.executeAsync(process_input(img))
+                // console.log(zz)
+                // model.executeAsync(process_input(img)).then(predictions => {
+                //     console.log(predictions)
+                //     const boxes = predictions[4].arraySync();
+                //     const scores = predictions[5].arraySync();
+                //     const classes = predictions[6].dataSync();
+                //     const detections = buildDetectedObjects(scores, .3,
+                //         boxes, classes, classesDir);
+
+                //     console.log('detections', detections)
+                //     tf.engine().endScope();
+                // });
+                model.detect(img).then(predictions => {
+                    let model_predictions = []
+                    console.log(predictions)
+                    predictions.forEach((p) =>{
+                        if (p.score > .3){
+                            model_predictions.push(p)
+                        }
+
+                    })
+                    // document.getElementById("debug2").innerText = JSON.stringify(model_predictions)
+
+
+                    document.getElementById("data").innerText = JSON.stringify({preds:model_predictions});
+                });
+            };
+
+            let process_input = function (img) {
+                const tfimg = img.toInt();
+                const expandedimg = tfimg.transpose([0, 1, 2]).expandDims();
+                return expandedimg;
+            };
+
 
             //Async to acively "record" screen
             async function imageClassificationWithTransferLearningOnWebcam(source) {
@@ -99,6 +142,17 @@ contextBridge.exposeInMainWorld("api", {
                     let img;
                     img = tf.browser.fromPixels(webcamInput);
                     // console.log(img)
+
+                    /*
+                    OD
+                    */
+
+                    // detectFrame(img, ODModel)
+
+                    /*
+                    OD
+                    */
+
 
                     //Get model weights
                     const activation = mobilenetModel.infer(img, "conv_preds");
@@ -114,14 +168,14 @@ contextBridge.exposeInMainWorld("api", {
                     if (knnClassifierModel.getNumClasses() > 0) {
                         // Get the most likely class and confidences from the classifier module.
                         const result = await knnClassifierModel.predictClass(activation);
-                        const coco_result = await cocoSSDModel.detect(img)
-                        // console.log("Prediction result,", result)
-                        console.log("Prediction result for Coco,", coco_result)
-                        //Printing results to screen
+                        console.log("Prediction knn result,", result)
+                        // Printing results to screen
                         document.getElementById("debug").innerText = `
                             prediction: ${result.label}
                             probability: ${result.confidences[result.label]}`;
                         document.getElementById("debug").style = "color:black"
+                        document.getElementById("debug").style = "background:white"
+
                         // Dispose the tensor to release the memory.
                         img.dispose();
                     }

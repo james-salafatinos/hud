@@ -16,7 +16,8 @@ const INPUT = document.getElementById('input-label')
 const SCREENSHOT_BTN = document.getElementById('screenshot')
 let offset_width = document.getElementById("options").offsetWidth
 let mouseMesh;
-let mouse = new THREE.Vector2();
+let mousePosition = new THREE.Vector2();
+let mouseWorldPosition = new THREE.Vector2();
 let blockHold = false;
 let startButtonClicked = false
 let TOP_RIGHT = new THREE.Vector2(5, 4)
@@ -27,6 +28,7 @@ let prevTime = performance.now();
 let cube;
 let smallCube;
 let rect;
+let rectState = {};
 let frameIndex = 0;
 let createCube
 let createSmallCube
@@ -107,25 +109,32 @@ window.addEventListener('mouseup', () => {
     isDragging = false
 })
 
+let setBbox = function(mesh){
+
+}
 
 window.addEventListener('mousedown', () => {
-    let mx = mouse.x * ((window.innerWidth) * 2 - 1) / 500
-    let my = mouse.y * -1 * ((window.innerHeight) * 2 - 1) / 500
+
+    rect = MeshFactory.createRect(0, 0, 0)
+    rect.rotation.x += Math.PI /2
+    rectState.startx = getMouseWorldPosition(mousePosition).x
+    rectState.starty = getMouseWorldPosition(mousePosition).y 
+    scene.add(rect)
     isDragging = true;
 
     if (blockHold && isDragging) {
 
-        cube = MeshFactory.createCube(mx, my, 0)
+        cube = MeshFactory.createCube(mousePosition.x, mousePosition.y , 0)
         scene.add(cube)
-        smallCube =  MeshFactory.createSmallCube(mx, my, 0)
+        smallCube =  MeshFactory.createSmallCube(mousePosition.x, mousePosition.y , 0)
         scene.add(smallCube)
 
         // DEBUG.innerText = JSON.stringify(window.innerWidth)
-        cube.position.x = mx
-        cube.position.y = my
+        cube.position.x = mousePosition.x
+        cube.position.y = mousePosition.y
 
-        smallCube.position.x = mx
-        smallCube.position.y = my
+        smallCube.position.x = mousePosition.x
+        smallCube.position.y = mousePosition.y
 
     }
 
@@ -146,17 +155,22 @@ window.addEventListener("resize", () => {
 });
 
 
-
+let getMouseWorldPosition = function(mousePosition){
+    let wmx = mousePosition.x * ((window.innerWidth) * 2 - 1) / (360)
+    let wmy = -mousePosition.y * -1 * ((window.innerHeight) * 2 - 1) / (360)
+    return {x: wmx, y: wmy}
+}
 
 window.addEventListener('mousemove', (event) => {
     // Update the mouse variable
     event.preventDefault();
-    mouse.x = ((event.clientX) / window.innerWidth) * 2 - 1
-    // DEBUG.innerText = JSON.stringify(offset_width)
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    //Set Screen Mouse Coordinates
+    mousePosition.x = ((event.clientX) / window.innerWidth) * 2 - 1
+    mousePosition.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-    mouseMesh.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / (360)
-    mouseMesh.position.y = -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360)
+    //For visibility, set mouseMesh to World Mouse Coordinates
+    mouseMesh.position.x = getMouseWorldPosition(mousePosition).x
+    mouseMesh.position.y = getMouseWorldPosition(mousePosition).y
 
 });
 
@@ -195,21 +209,13 @@ function init() {
     // scene.add(raycasterPlane)
     // console.log('Raycaster mesh', raycasterPlane)
 
-    rect = MeshFactory.createRect(0, 0, 0)
-    rect.rotation.x += Math.PI /2
-    scene.add(rect)
+
 
     mouseMesh = MeshFactory.createMouse(0, 0, 0)
     scene.add(mouseMesh)
 
 }
 
-let setSize = function ( myMesh, xSize, ySize, zSize){
-    let scaleFactorX = xSize / myMesh.geometry.parameters.width;
-    let scaleFactorY = ySize / myMesh.geometry.parameters.height;
-    let scaleFactorZ = zSize / myMesh.geometry.parameters.depth;
-    myMesh.scale.set( scaleFactorX, scaleFactorY, scaleFactorZ );
-  }
 
 function animate() {
     //Frame Start up
@@ -224,22 +230,50 @@ function animate() {
     mouseMesh.rotation.y += .0001
     mouseMesh.rotation.z += .0001
 
+    if ((document.getElementById('data').innerText != "")){
+        // console.log(document.getElementById('data').innerText)
+        let data = JSON.parse((document.getElementById('data').innerText))
+        console.log("DATA", data)
+        
+        data.preds.forEach((pred) =>{
+            let {x,y,w,h} = pred.bbox
+            x = ((pred.bbox[0] /window.innerWidth)*2-1) * ((window.innerWidth) * 2 - 1) / (360)
+            y = ((pred.bbox[1] /window.innerHeight)*2-1) * (-1 * ((window.innerHeight) * 2 - 1) / (360))
+        
+
+            let rm = MeshFactory.createRect(x,y,0)
+            rm.rotation.x += Math.PI /2
+            rm.geometry.parameters.width = w /1000
+            rm.geometry.parameters.height = h /1000
+            scene.add(rm)
+        })
+    }
 
     if (isDragging) {
 
         //Requires render side updating, RATHER than in MOUSEDOWN
-        rect.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / (360*2)
-        rect.position.y = -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360*2) 
-        rect.scale.set(mouse.x * ((window.innerWidth) * 2 - 1) / (360), 1,  -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360) )
-        console.log('MOUSE POS',  mouse.x * ((window.innerWidth) * 2 - 1) / (360),-mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360) )
-        // setSize(rect, mouse.x /10000, -mouse.y /10000, .1)
-        //Requires render side updating
-        smallCube.position.x = mouse.x * 1
-        smallCube.position.y = mouse.y * 1
+        // rect.position.x = mouse.x * ((window.innerWidth) * 2 - 1) / (360*2)
+        // rect.position.y = -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360*2) 
+        // rect.scale.set(mouse.x * ((window.innerWidth) * 2 - 1) / (360), 1,  -mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360) )
+        // console.log('MOUSE POS',  mouse.x * ((window.innerWidth) * 2 - 1) / (360),-mouse.y * -1 * ((window.innerHeight) * 2 - 1) / (360) )
+        let deltax = getMouseWorldPosition(mousePosition).x - rectState.startx
+        let deltay = getMouseWorldPosition(mousePosition).y - rectState.starty
 
-        //Requires render side updating
-        cube.position.x = mouse.x * 2
-        cube.position.y = mouse.y * 2
+        rect.position.x = getMouseWorldPosition(mousePosition).x - deltax/2
+        rect.position.y = getMouseWorldPosition(mousePosition).y - deltay/2
+        rect.scale.set(deltax*2, 1, deltay*2)
+        rectState.deltax = deltax
+        rectState.deltay = deltay
+        console.log("state", rectState)
+       
+
+        // //Requires render side updating
+        // smallCube.position.x = mousePosition.x 
+        // smallCube.position.y = mousePosition.y 
+
+        // //Requires render side updating
+        // cube.position.x = mousePosition.x 
+        // cube.position.y = mousePosition.y 
 
        
     }

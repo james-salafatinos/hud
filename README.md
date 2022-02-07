@@ -10,3 +10,9 @@ Goals
 - [ ] Ability to load and save model weights
 - [ ] Ability to see a small panel interface to load / save from database
 - [ ] Ability to paint frame-by-frame boundingboxes from model/tensorflow-lite predictions with three.js
+
+
+> npm install --save --legacy-peer-deps
+
+https://stackoverflow.com/questions/63221439/detect-keypress-off-document
+https://www.electronjs.org/docs/latest/api/global-shortcut

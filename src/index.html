@@ -5,16 +5,19 @@
   <meta charset="UTF-8" />
   <title>CPU Usage</title>
   <link rel="stylesheet" href="index.css" />
+  <div id='data' style='display:none'></div>
 </head>
 
 <body>
   <!-- This <video> makes you be able to see what is being screen recorded -->
-  <video autoplay playsinline muted id="video"></video>
+  <video autoplay playsinline muted style="display:none" id="video"></video>
 
+ 
   <div id='options'>
     <p id="close"> &#10006;</p>
     <p id="start"> &#10047;</p>
     <p id="debug"> test</p>
+    <p id="debug2"> test</p>
     <button id="screenshot">
       Take Screenshot
     </button>
@@ -25,9 +28,9 @@
 </body>
 <!-- <script src="./renderer.js" defer></script> -->
 <script type="module" src="./app.js"></script>
-<script src="https://unpkg.com/@tensorflow/tfjs"></script>
+<!-- <script src="https://unpkg.com/@tensorflow/tfjs"></script>
 <script src="https://unpkg.com/@tensorflow-models/mobilenet"></script>
 <script src="https://unpkg.com/@tensorflow-models/knn-classifier"></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
 
 </html>
