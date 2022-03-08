@@ -1,4 +1,13 @@
-const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, globalShortcut, dialog } = require('electron');
+
+
+const prompt = require('electron-prompt');
+
+
+var fs = require('fs');
+var screenshot = require('electron-screenshot-service');
+
+
 
 const path = require('path');
 let ctrlBPressed = false;
@@ -43,24 +52,59 @@ const createWindow = () => {
   ipcMain.on('blockHold', () => {
     mainWindow.setIgnoreMouseEvents(false);
   })
+  ipcMain.on('UserPrompt', () => {
+
+    //Handle HotKeys Allowance/Disallowance
+    ctrlBPressed = false;
+    mainWindow.setIgnoreMouseEvents(true, { forward: true });
+
+    prompt({
+      title: 'Prompt example',
+      label: 'URL:',
+      value: '',
+      type: 'input'
+    })
+      .then((r) => {
+
+        if (r === null) {
+          console.log('user cancelled');
+        } else {
+          console.log('result', r);
+        }
+      })
+      .catch(console.error);
+  })
+  ipcMain.on('ScreenShot', () => {
+    screenshot({
+      url : 'http://google.de',
+      width: 1024,
+      height: 768
+    })
+      .then(function (img) {
+        fs.writeFile('./out.png', img.data, function (err) {
+          screenshot.close();
+        });
+      });
+
+  })
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
-  // // // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // // // // Open the DevTools.
+  // mainWindow.webContents.openDevTools();
 
   //Register Global Keyobard Events
-  const ret = globalShortcut.register('CommandOrControl+B', () => {
-    console.log('CommandOrControl+B is pressed')
-    if (ctrlBPressed){
+  const ret = globalShortcut.register('Control+B', () => {
+    console.log('Control+B is pressed')
+    if (ctrlBPressed) {
       ctrlBPressed = false;
-      mainWindow.setIgnoreMouseEvents(false);
-      
-    }
-    else{
-      ctrlBPressed = true;
       mainWindow.setIgnoreMouseEvents(true, { forward: true });
+
+    }
+    else {
+      ctrlBPressed = true;
+      mainWindow.setIgnoreMouseEvents(false);
     }
 
   })

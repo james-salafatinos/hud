@@ -46,11 +46,13 @@
   },
   "dependencies": {
     "@tensorflow-models/coco-ssd": "^2.2.2",
-    "@tensorflow-models/mobilenet": "^2.1.0",
     "@tensorflow-models/knn-classifier": "",
+    "@tensorflow-models/mobilenet": "^2.1.0",
     "@tensorflow/tfjs": "",
     "@tensorflow/tfjs-node": "",
+    "electron-prompt": "^1.7.0",
     "electron-reload": "^2.0.0-alpha.1",
+    "electron-screenshot-service": "^4.0.3",
     "electron-squirrel-startup": "^1.0.0",
     "systeminformation": "^5.10.7",
     "three": "^0.136.0"

@@ -16,6 +16,8 @@ const tfConverter = require('@tensorflow/tfjs-converter');
 let loadGraphModel = tfConverter.loadGraphModel
 // const tfData = require('@tensorflow/tfjs-data')
 
+
+
 var knnClassifierModel;
 var mobilenetModel;
 var ODModel;
@@ -49,6 +51,10 @@ contextBridge.exposeInMainWorld("api", {
         const activation = mobilenetModel.infer(img, "conv_preds");
         knnClassifierModel.addExample(activation, class_label);
     },
+    UserPrompt: () => {
+        ipcRenderer.send('UserPrompt')
+    },
+    
     stream: () => {
         //Start Capture
         desktopCapturer.getSources({
@@ -110,8 +116,8 @@ contextBridge.exposeInMainWorld("api", {
                 model.detect(img).then(predictions => {
                     let model_predictions = []
                     console.log(predictions)
-                    predictions.forEach((p) =>{
-                        if (p.score > .3){
+                    predictions.forEach((p) => {
+                        if (p.score > .3) {
                             model_predictions.push(p)
                         }
 
@@ -119,7 +125,7 @@ contextBridge.exposeInMainWorld("api", {
                     // document.getElementById("debug2").innerText = JSON.stringify(model_predictions)
 
 
-                    document.getElementById("data").innerText = JSON.stringify({preds:model_predictions});
+                    document.getElementById("data").innerText = JSON.stringify({ preds: model_predictions });
                 });
             };
 
@@ -196,6 +202,10 @@ contextBridge.exposeInMainWorld("api", {
                         },
                     }
                 };
+
+
+
+                
                 //Claim the html element
                 const videoElement = document.getElementById('video');
 
