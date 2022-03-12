@@ -34,8 +34,10 @@ class SnippingTool {
         });
         window.addEventListener('mouseup', (event) => {
             this.isDragging = false
-            // this.api.UserPrompt()
+            console.log("**MOUSE UP **")
             this.api.ScreenShot()
+            this.api.UserPrompt()
+
       
         })
 

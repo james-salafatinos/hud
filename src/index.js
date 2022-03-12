@@ -5,7 +5,7 @@ const prompt = require('electron-prompt');
 
 
 var fs = require('fs');
-var screenshot = require('electron-screenshot-service');
+// var screenshot = require('electron-screenshot-service');
 
 
 
@@ -74,25 +74,13 @@ const createWindow = () => {
       })
       .catch(console.error);
   })
-  ipcMain.on('ScreenShot', () => {
-    screenshot({
-      url : 'http://google.de',
-      width: 1024,
-      height: 768
-    })
-      .then(function (img) {
-        fs.writeFile('./out.png', img.data, function (err) {
-          screenshot.close();
-        });
-      });
 
-  })
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   // // // // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   //Register Global Keyobard Events
   const ret = globalShortcut.register('Control+B', () => {

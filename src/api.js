@@ -1,4 +1,13 @@
-const { contextBridge, ipcRenderer, desktopCapturer } = require('electron')
+const { contextBridge, ipcRenderer, desktopCapturer, electronScreen, shell } = require('electron')
+
+// const electron = require('electron')
+// const desktopCapturer = electron.desktopCapturer
+// const electronScreen = electron.screen
+// const shell = electron.shell
+
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
 
 /*
 ##########################################################################################
@@ -15,6 +24,7 @@ const cocoSsd = require('@tensorflow-models/coco-ssd')
 const tfConverter = require('@tensorflow/tfjs-converter');
 let loadGraphModel = tfConverter.loadGraphModel
 // const tfData = require('@tensorflow/tfjs-data')
+
 
 
 
@@ -54,7 +64,28 @@ contextBridge.exposeInMainWorld("api", {
     UserPrompt: () => {
         ipcRenderer.send('UserPrompt')
     },
-    
+
+    ScreenShot: () => {
+
+        desktopCapturer.getSources({ types: ['screen'] })
+            .then(sources => {
+                // document.getElementById('screenshot-image').src = sources[0].thumbnail.toDataURL() // The image to display the screenshot
+                console.log("GET SOURCES")
+                const screenshotPath = path.join(os.tmpdir(), 'screenshot.png')
+
+                let screenshot_img;
+                screenshot_img = tf.browser.fromPixels(webcamInput);
+                console.log(screenshot_img)
+                console.log(tf)
+                backend.node.encodePng(screenshot_img).then((f) => {
+                    fs.writeFileSync("simple.png", f); 
+                    console.log("Basic JPG 'simple.jpg' written");
+                });
+
+
+            })
+    },
+
     stream: () => {
         //Start Capture
         desktopCapturer.getSources({
@@ -205,7 +236,7 @@ contextBridge.exposeInMainWorld("api", {
 
 
 
-                
+
                 //Claim the html element
                 const videoElement = document.getElementById('video');
 
