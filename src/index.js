@@ -10,6 +10,7 @@ var fs = require('fs');
 
 
 const path = require('path');
+const { fsOpenFiles } = require('systeminformation');
 let ctrlBPressed = false;
 
 require('electron-reload')(__dirname)
@@ -54,6 +55,10 @@ const createWindow = () => {
   })
   ipcMain.on('UserPrompt', () => {
 
+    /*
+    Manages the electron user prompt for label, and then also renames the temp screenshot file what the label is
+    */
+
     //Handle HotKeys Allowance/Disallowance
     ctrlBPressed = false;
     mainWindow.setIgnoreMouseEvents(true, { forward: true });
@@ -65,11 +70,13 @@ const createWindow = () => {
       type: 'input'
     })
       .then((r) => {
-
         if (r === null) {
           console.log('user cancelled');
         } else {
           console.log('result', r);
+          fs.rename('screenshot_tmp.cropped.png',`${r}.png`, () =>{
+            console.log(`File renamed! From screenshot_tmp.cropped.png to ${r}`)
+          })
         }
       })
       .catch(console.error);
@@ -80,7 +87,7 @@ const createWindow = () => {
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   // // // // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   //Register Global Keyobard Events
   const ret = globalShortcut.register('Control+B', () => {

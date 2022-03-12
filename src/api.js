@@ -8,6 +8,7 @@ const { contextBridge, ipcRenderer, desktopCapturer, electronScreen, shell } = r
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
+const sharp = require('sharp')
 
 /*
 ##########################################################################################
@@ -24,7 +25,6 @@ const cocoSsd = require('@tensorflow-models/coco-ssd')
 const tfConverter = require('@tensorflow/tfjs-converter');
 let loadGraphModel = tfConverter.loadGraphModel
 // const tfData = require('@tensorflow/tfjs-data')
-
 
 
 
@@ -65,24 +65,33 @@ contextBridge.exposeInMainWorld("api", {
         ipcRenderer.send('UserPrompt')
     },
 
-    ScreenShot: () => {
+    ScreenShot: (x1,y1,x2,y2) => {
+        /*
+        Calls upon desktop capturer to get the sources, 
+        uses the tf.browser.fromPixels to get a tensor screenshot, 
+        then uses the tfjs-node library to encode the png and save it
+        */
 
         desktopCapturer.getSources({ types: ['screen'] })
             .then(sources => {
                 // document.getElementById('screenshot-image').src = sources[0].thumbnail.toDataURL() // The image to display the screenshot
-                console.log("GET SOURCES")
-                const screenshotPath = path.join(os.tmpdir(), 'screenshot.png')
+                console.log("GRABBED SOURCES, NOW STARTING SREENSHOT", x1,y1,x2,y2)
+                const screenshotPath = `screenshot_tmp`
 
                 let screenshot_img;
                 screenshot_img = tf.browser.fromPixels(webcamInput);
-                console.log(screenshot_img)
-                console.log(tf)
+
                 backend.node.encodePng(screenshot_img).then((f) => {
-                    fs.writeFileSync("simple.png", f); 
-                    console.log("Basic JPG 'simple.jpg' written");
+                    fs.writeFileSync(`${screenshotPath}.png`, f);
+                    console.log(`png written at ${screenshotPath}.png`);
+                }).then((z) => {
+                    sharp(`./${screenshotPath}.png`)
+                        .extract({ left: 0, top: 0, width: x2, height: y2 })
+                        .toFile(`${screenshotPath}.cropped.png`, function (err) {
+                            if (err) console.log(err);
+                        })
+
                 });
-
-
             })
     },
 
