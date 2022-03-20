@@ -65,7 +65,7 @@ contextBridge.exposeInMainWorld("api", {
         ipcRenderer.send('UserPrompt')
     },
 
-    ScreenShot: (x1,y1,x2,y2) => {
+    ScreenShot: (start_left,start_top,W,H) => {
         /*
         Calls upon desktop capturer to get the sources, 
         uses the tf.browser.fromPixels to get a tensor screenshot, 
@@ -75,18 +75,20 @@ contextBridge.exposeInMainWorld("api", {
         desktopCapturer.getSources({ types: ['screen'] })
             .then(sources => {
                 // document.getElementById('screenshot-image').src = sources[0].thumbnail.toDataURL() // The image to display the screenshot
-                console.log("GRABBED SOURCES, NOW STARTING SREENSHOT", x1,y1,x2,y2)
+                console.log("GRABBED SOURCES, NOW STARTING SREENSHOT", start_left,start_top,W,H)
                 const screenshotPath = `screenshot_tmp`
 
                 let screenshot_img;
                 screenshot_img = tf.browser.fromPixels(webcamInput);
+                console.log(screenshot_img)
 
                 backend.node.encodePng(screenshot_img).then((f) => {
                     fs.writeFileSync(`${screenshotPath}.png`, f);
                     console.log(`png written at ${screenshotPath}.png`);
                 }).then((z) => {
+                    console.log(z)
                     sharp(`./${screenshotPath}.png`)
-                        .extract({ left: 0, top: 0, width: x2, height: y2 })
+                        .extract({ left: start_left, top: start_top, width: W, height: H})
                         .toFile(`${screenshotPath}.cropped.png`, function (err) {
                             if (err) console.log(err);
                         })
@@ -257,7 +259,7 @@ contextBridge.exposeInMainWorld("api", {
             }
 
             await initialize()
-            await imageClassificationWithTransferLearningOnWebcam(source)
+            // await imageClassificationWithTransferLearningOnWebcam(source)
 
         }
 

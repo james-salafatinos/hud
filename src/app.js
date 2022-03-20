@@ -122,15 +122,15 @@ function init() {
     domCanvas.appendChild(renderer.domElement);
 
     // LIGHTS
-    const light = new THREE.PointLight(0xeeeeff, 0x777788, 0.75);
-    light.position.set(0.5, 1, 0.75);
+    const light = new THREE.PointLight(0xeeeeff, 0x777788, 1);
+    light.position.set(0.5, 1, 1);
     scene.add(light);
     scene.add(new THREE.AmbientLight(0x404040));
 
-    let sideLight = new THREE.PointLight(0xeeeeff, .5)
+    let sideLight = new THREE.PointLight(0xeeeeff, 1)
     sideLight.position.x = 10
     sideLight.lookAt(0, 0, 0)
-    scene.add(new THREE.PointLight(0xd3fe30, .5))
+    scene.add(sideLight)
 
     //Camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
