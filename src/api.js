@@ -65,22 +65,33 @@ contextBridge.exposeInMainWorld("api", {
         ipcRenderer.send('UserPrompt')
     },
 
-    ScreenShot: (start_left,start_top,W,H) => {
+    ScreenShot: (start_left, start_top, W, H) => {
         /*
         Calls upon desktop capturer to get the sources, 
         uses the tf.browser.fromPixels to get a tensor screenshot, 
         then uses the tfjs-node library to encode the png and save it
         */
+        // let source_list;
 
-        desktopCapturer.getSources({ types: ['screen'] })
+        // desktopCapturer.getSources({
+        //     types: ['window', 'screen']
+        // }).then((source_id_list) => {
+        //     console.log('API.js desktopCapturer', source_id_list)
+
+        desktopCapturer.getSources({ types: ['window', 'screen'] })
             .then(sources => {
                 // document.getElementById('screenshot-image').src = sources[0].thumbnail.toDataURL() // The image to display the screenshot
-                console.log("GRABBED SOURCES, NOW STARTING SREENSHOT", start_left,start_top,W,H)
+                console.log("GRABBED SOURCES, NOW STARTING SREENSHOT", start_left, start_top, W, H)
                 const screenshotPath = `screenshot_tmp`
 
                 let screenshot_img;
                 screenshot_img = tf.browser.fromPixels(webcamInput);
+                let screenshot_img2 = sources[0].thumbnail.toPNG()
                 console.log(screenshot_img)
+                console.log(screenshot_img2)
+
+
+
 
                 backend.node.encodePng(screenshot_img).then((f) => {
                     fs.writeFileSync(`${screenshotPath}.png`, f);
@@ -88,7 +99,7 @@ contextBridge.exposeInMainWorld("api", {
                 }).then((z) => {
                     console.log(z)
                     sharp(`./${screenshotPath}.png`)
-                        .extract({ left: start_left, top: start_top, width: W, height: H})
+                        .extract({ left: start_left, top: start_top, width: W, height: H })
                         .toFile(`${screenshotPath}.cropped.png`, function (err) {
                             if (err) console.log(err);
                         })
