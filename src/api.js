@@ -177,7 +177,8 @@ contextBridge.exposeInMainWorld("api", {
                     })
                     // document.getElementById("debug2").innerText = JSON.stringify(model_predictions)
 
-
+                    document.getElementById("debug").innerText = `
+                    prediction: ${JSON.stringify(model_predictions)}`;
                     document.getElementById("data").innerText = JSON.stringify({ preds: model_predictions });
                 });
             };
@@ -200,13 +201,26 @@ contextBridge.exposeInMainWorld("api", {
                     //Image from stream
                     let img;
                     img = tf.browser.fromPixels(webcamInput);
-                    // console.log(img)
+                    let screenshot_img3
+                    // desktopCapturer.getSources({ types: ['window', 'screen'] })
+                    //     .then(sources => {
+                    //         // document.getElementById('screenshot-image').src = sources[0].thumbnail.toDataURL() // The image to display the screenshot
+                    //         // console.log("GRABBED SOURCES, NOW STARTING SREENSHOT", start_left, start_top, W, H)
+                    //         // const screenshotPath = `screenshot_tmp`
+
+                    //         screenshot_img3 = sources[0].thumbnail.toPNG()
+                    //         detectFrame(screenshot_img3, ODModel)
+
+                    //     });
+                    // // console.log(img)
 
                     /*
                     OD
                     */
 
-                    // detectFrame(img, ODModel)
+                    detectFrame(img, ODModel)
+                    console.log('rightafter')
+
 
                     /*
                     OD
@@ -270,7 +284,7 @@ contextBridge.exposeInMainWorld("api", {
             }
 
             await initialize()
-            // await imageClassificationWithTransferLearningOnWebcam(source)
+            await imageClassificationWithTransferLearningOnWebcam(source)
 
         }
 

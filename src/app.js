@@ -155,7 +155,8 @@ function animate() {
     if ((document.getElementById('data').innerText != "")) {
         // console.log(document.getElementById('data').innerText)
         let data = JSON.parse((document.getElementById('data').innerText))
-        console.log("DATA", data)
+        // setTimeout(      console.log("DATA", data), 2000)
+  
 
         data.preds.forEach((pred) => {
             let { x, y, w, h } = pred.bbox
